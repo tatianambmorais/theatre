@@ -21,7 +21,7 @@ public class MovieController {
 
     @PostMapping("/buscar")
     public ResponseEntity<MoviesAPIDTO> getAndSaveMovies(@RequestBody MovieRequestDTO movieRequestDTO) {
-        MoviesAPIDTO savedMovie = movieService.getAndSaveMovie(movieRequestDTO.titulo());
+        MoviesAPIDTO savedMovie = movieService.getAndSaveMovie(movieRequestDTO.title());
         return ResponseEntity.ok(savedMovie);
     }
 
