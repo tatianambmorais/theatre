@@ -35,7 +35,7 @@ class MovieControllerTest {
     private ObjectMapper objectMapper;
 
     @Test
-    void testGetAndSaveMovies_sucesso() throws Exception {
+    void testGetAndSaveMovies_sucsess() throws Exception {
         MoviesAPIDTO movie = new MoviesAPIDTO(1L, "Avatar", "Avatar", "en",
                 "Um filme de ficção", "poster.jpg", "backdrop.jpg",
                 "2009-12-18", 7.8, 8.5, 1500, false, false, List.of(28, 12));
@@ -48,30 +48,39 @@ class MovieControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(requestDTO)))
                 .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))  // Verifica o tipo de conteúdo
+                .andExpect(jsonPath("$.id").value(1L))
                 .andExpect(jsonPath("$.title").value("Avatar"))
-                .andExpect(jsonPath("$.id").value(1L));
+                .andExpect(jsonPath("$.overview").value("Um filme de ficção"));
     }
 
     @Test
-    void testGetMovieById_sucesso() throws Exception {
+    void testGetMovieById_success() throws Exception {
         MoviesDTO movieDTO = new MoviesDTO(1L, "Avatar", "Um filme de ficção");
 
         Mockito.when(movieService.getMovieById(1L)).thenReturn(movieDTO);
 
         mockMvc.perform(get("/filmes/1"))
                 .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))  // Verifica o tipo de conteúdo
                 .andExpect(jsonPath("$.id").value(1L))
-                .andExpect(jsonPath("$.title").value("Avatar"));
+                .andExpect(jsonPath("$.title").value("Avatar"))
+                .andExpect(jsonPath("$.overview").value("Um filme de ficção"));
     }
 
+
     @Test
-    void testGetMovieById_naoEncontrado() throws Exception {
+    void testGetMovieById_notFound() throws Exception {
         Mockito.when(movieService.getMovieById(1L))
                 .thenThrow(new ResourceNotFoundException("Filme não encontrado"));
 
         mockMvc.perform(get("/filmes/1"))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))  // Verifica o tipo de conteúdo
+                .andExpect(jsonPath("$.error").value("Recurso não encontrado"))
+                .andExpect(jsonPath("$.message").value("Filme não encontrado"));
     }
+
 
     @Test
     void testGetAllMovies() throws Exception {
@@ -88,7 +97,7 @@ class MovieControllerTest {
     }
 
     @Test
-    void testDeleteMovie_sucesso() throws Exception {
+    void testDeleteMovie_success() throws Exception {
         mockMvc.perform(delete("/filmes/deletar/1"))
                 .andExpect(status().isOk())
                 .andExpect(content().string("O filme foi deletado"));

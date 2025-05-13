@@ -8,7 +8,6 @@ import jakarta.websocket.server.PathParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Mono;
 
 import java.util.List;
 
@@ -19,11 +18,16 @@ public class MovieController {
     @Autowired
     private MovieService movieService;
 
+
     @PostMapping("/buscar")
     public ResponseEntity<MoviesAPIDTO> getAndSaveMovies(@RequestBody MovieRequestDTO movieRequestDTO) {
+        if (movieRequestDTO.title() == null || movieRequestDTO.title().trim().isEmpty()) {
+            throw new IllegalArgumentException("O título do filme não pode ser vazio");
+        }
         MoviesAPIDTO savedMovie = movieService.getAndSaveMovie(movieRequestDTO.title());
         return ResponseEntity.ok(savedMovie);
     }
+
 
     @GetMapping("/{id}")
     public ResponseEntity<MoviesDTO> getMovieById(@PathVariable Long id) {

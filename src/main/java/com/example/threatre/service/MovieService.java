@@ -10,6 +10,7 @@ import com.example.threatre.repository.MovieRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -25,6 +26,7 @@ public class MovieService {
     @Autowired
     private MovieMapper movieMapper;
 
+    @Transactional
     public MoviesAPIDTO getAndSaveMovie(String title) {
         if (title == null || title.trim().isEmpty()) {
             throw new IllegalArgumentException("O título do filme não pode ser vazio");
@@ -33,7 +35,7 @@ public class MovieService {
         MoviesAPIDTO foundMovie = getMoviesAPI(title);
 
         if (foundMovie == null) {
-            throw new ResourceNotFoundException("Filme não encontrado");
+            throw new ResourceNotFoundException("Filme com título \"" + title + "\" não encontrado");
         }
 
         Movie movieEntity = movieMapper.toEntity(foundMovie);
@@ -42,6 +44,7 @@ public class MovieService {
 
         return foundMovie;
     }
+
 
 
     private MoviesAPIDTO getMoviesAPI(String title) {

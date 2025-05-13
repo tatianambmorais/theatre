@@ -81,13 +81,14 @@ class MovieServiceTest {
         when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
         when(responseSpec.bodyToMono(MoviesResponseWrapperDTO.class)).thenReturn(Mono.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> movieService.getAndSaveMovie(title));
+        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () -> movieService.getAndSaveMovie(title));
+        assertEquals("Filme com título \"Inexistente\" não encontrado", exception.getMessage());
     }
 
 
     private MoviesAPIDTO criarMoviesAPIDTOFake() {
         return new MoviesAPIDTO(
-                1L,                      // esse é o id
+                1L,
                 "Avatar",
                 "Avatar",
                 "en",
@@ -106,12 +107,14 @@ class MovieServiceTest {
 
     @Test
     void testGetAndSaveMovie_empyTitle() {
-        assertThrows(IllegalArgumentException.class, () -> movieService.getAndSaveMovie("  "));
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> movieService.getAndSaveMovie("  "));
+        assertEquals("O título do filme não pode ser vazio", exception.getMessage());
     }
 
     @Test
     void testGetAndSaveMovie_nullTitle() {
-        assertThrows(IllegalArgumentException.class, () -> movieService.getAndSaveMovie(null));
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> movieService.getAndSaveMovie(null));
+        assertEquals("O título do filme não pode ser vazio", exception.getMessage());
     }
 
     @Test
@@ -152,7 +155,7 @@ class MovieServiceTest {
     }
 
     @Test
-    void testDeleteMovie_sucsess() {
+    void testDeleteMovie_success() {
         when(movieRepository.existsById(1L)).thenReturn(true);
         doNothing().when(movieRepository).deleteById(1L);
 
