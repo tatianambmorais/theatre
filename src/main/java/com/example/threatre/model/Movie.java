@@ -1,12 +1,15 @@
+
 package com.example.threatre.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.List;
+import java.util.Set;
+
 @Data
 @Entity
-@Getter
-@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class Movie {
@@ -15,15 +18,38 @@ public class Movie {
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @Column(name = "title")
     private String title;
 
-    @Column(name = "original_language")
+    @JsonProperty("original_title")
+    private String originalTitle;
+
+    @JsonProperty("original_language")
     private String originalLanguage;
 
-    @Column(name = "overview", columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT")
     private String overview;
 
-    @Column(name = "adult")
-    private boolean adult;
+    @JsonProperty("poster_path")
+    private String posterPath;
+
+    @JsonProperty("backdrop_path")
+    private String backdropPath;
+
+    @JsonProperty("release_date")
+    private String releaseDate;
+
+    private Double popularity;
+
+    @JsonProperty("vote_average")
+    private Double voteAverage;
+
+    @JsonProperty("vote_count")
+    private Integer voteCount;
+
+    private Boolean adult;
+
+    private Boolean video;
+
+    @ElementCollection
+    private List<Integer> genreIds;
 }

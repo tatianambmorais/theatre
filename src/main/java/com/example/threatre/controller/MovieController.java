@@ -1,14 +1,13 @@
 package com.example.threatre.controller;
 
+import com.example.threatre.dto.MovieRequestDTO;
+import com.example.threatre.dto.MoviesAPIDTO;
 import com.example.threatre.service.MovieService;
 import com.example.threatre.dto.MoviesDTO;
 import jakarta.websocket.server.PathParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
@@ -20,13 +19,28 @@ public class MovieController {
     @Autowired
     private MovieService movieService;
 
-    @GetMapping("/em-cartaz")
-    public Mono<ResponseEntity<List<MoviesDTO>>> getNowPlayingMovies() {
-        return movieService.getNowPlayingMovies()
-                .map(ResponseEntity::ok);
+    @PostMapping("/buscar")
+    public ResponseEntity<MoviesAPIDTO> getAndSaveMovies(@RequestBody MovieRequestDTO movieRequestDTO) {
+        MoviesAPIDTO savedMovie = movieService.getAndSaveMovie(movieRequestDTO.titulo());
+        return ResponseEntity.ok(savedMovie);
     }
+
     @GetMapping("/{id}")
-    public MoviesDTO getMovieById(@PathVariable  Long id) {
-        return movieService.getMovieById(id);
+    public ResponseEntity<MoviesDTO> getMovieById(@PathVariable Long id) {
+        MoviesDTO movie = movieService.getMovieById(id);
+        return ResponseEntity.ok(movie);
     }
+
+    @GetMapping("/todos")
+    public ResponseEntity<List<MoviesDTO>> getAllMovies(){
+        List<MoviesDTO> movies =  movieService.getAllMovies();
+        return ResponseEntity.ok(movies);
+    }
+
+    @DeleteMapping("/deletar/{id}")
+    public ResponseEntity<String> deleteMovie(@PathVariable Long id) {
+        movieService.deleteMovie(id);
+        return ResponseEntity.ok("O filme foi deletado");
+    }
+
 }
