@@ -9,7 +9,6 @@ Projeto de exemplo utilizando **Spring Boot 3** para gestão de filmes com banco
 - **Spring Data JPA** (para persistência de dados)
 - **PostgreSQL** (banco de dados)
 - **Spring Web** (API REST)
-- **Spring WebFlux** (para reatividade)
 - **JUnit 5 e Mockito** (para testes)
 - **Lombok** (para simplificação do código)
 
