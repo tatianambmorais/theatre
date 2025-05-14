@@ -2,6 +2,9 @@ package com.example.threatre.controller;
 
 import com.example.threatre.dto.MovieRequestDTO;
 import com.example.threatre.dto.MoviesAPIDTO;
+import com.example.threatre.service.MovieService;
+import com.example.threatre.dto.MovieRequestDTO;
+import com.example.threatre.dto.MoviesAPIDTO;
 import com.example.threatre.dto.MoviesDTO;
 import com.example.threatre.exception.ResourceNotFoundException;
 import com.example.threatre.service.MovieService;
@@ -10,15 +13,13 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
-import static org.hamcrest.Matchers.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -28,14 +29,14 @@ class MovieControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockitoBean
-    private MovieService movieService;
+    @MockBean
+    private MovieService movieService;  // Agora mockado corretamente
 
     @Autowired
     private ObjectMapper objectMapper;
 
     @Test
-    void testGetAndSaveMovies_sucsess() throws Exception {
+    void testGetAndSaveMovies_success() throws Exception {
         MoviesAPIDTO movie = new MoviesAPIDTO(1L, "Avatar", "Avatar", "en",
                 "Um filme de ficção", "poster.jpg", "backdrop.jpg",
                 "2009-12-18", 7.8, 8.5, 1500, false, false, List.of(28, 12));
@@ -48,7 +49,7 @@ class MovieControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(requestDTO)))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))  // Verifica o tipo de conteúdo
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id").value(1L))
                 .andExpect(jsonPath("$.title").value("Avatar"))
                 .andExpect(jsonPath("$.overview").value("Um filme de ficção"));
@@ -62,12 +63,11 @@ class MovieControllerTest {
 
         mockMvc.perform(get("/filmes/1"))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))  // Verifica o tipo de conteúdo
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id").value(1L))
                 .andExpect(jsonPath("$.title").value("Avatar"))
                 .andExpect(jsonPath("$.overview").value("Um filme de ficção"));
     }
-
 
     @Test
     void testGetMovieById_notFound() throws Exception {
@@ -76,11 +76,10 @@ class MovieControllerTest {
 
         mockMvc.perform(get("/filmes/1"))
                 .andExpect(status().isNotFound())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))  // Verifica o tipo de conteúdo
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.error").value("Recurso não encontrado"))
                 .andExpect(jsonPath("$.message").value("Filme não encontrado"));
     }
-
 
     @Test
     void testGetAllMovies() throws Exception {

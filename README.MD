@@ -20,6 +20,10 @@ Projeto de exemplo utilizando **Spring Boot 3** para gestão de filmes com banco
 1. **POST /filmes/buscar**
     - Busca e salva um filme com base no título.
     - Caso o título esteja vazio ou nulo, uma exceção de `IllegalArgumentException` será lançada.
+    - O título do filme a ser buscado deve ir como atributo "title" no body da requisição. 
+    - Exemplo: "{
+      "title": "Madagascar"
+      }"
 
 2. **GET /filmes/{id}**
     - Obtém um filme pelo ID.

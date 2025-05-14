@@ -1,6 +1,5 @@
 package com.example.threatre.service;
 
-
 import com.example.threatre.dto.MoviesAPIDTO;
 import com.example.threatre.dto.MoviesDTO;
 import com.example.threatre.dto.MoviesResponseWrapperDTO;
@@ -8,26 +7,19 @@ import com.example.threatre.exception.ResourceNotFoundException;
 import com.example.threatre.mapper.MovieMapper;
 import com.example.threatre.model.Movie;
 import com.example.threatre.repository.MovieRepository;
+import com.example.threatre.client.MoviesClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
-import org.springframework.web.reactive.function.client.WebClient;
-import java.util.function.Function;
-import reactor.core.publisher.Mono;
-
-import java.net.URI;
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+
+import java.util.List;
 
 class MovieServiceTest {
 
     @InjectMocks
     private MovieService movieService;
-
-    @Mock
-    private WebClient webClient;
 
     @Mock
     private MovieRepository movieRepository;
@@ -36,13 +28,7 @@ class MovieServiceTest {
     private MovieMapper movieMapper;
 
     @Mock
-    private WebClient.RequestHeadersUriSpec requestHeadersUriSpec;
-
-    @Mock
-    private WebClient.RequestHeadersSpec requestHeadersSpec;
-
-    @Mock
-    private WebClient.ResponseSpec responseSpec;
+    private MoviesClient moviesClient;
 
     @BeforeEach
     void setUp() {
@@ -51,68 +37,50 @@ class MovieServiceTest {
 
     @Test
     void testGetAndSaveMovie_success() {
-        // Arrange
         String title = "Avatar";
         MoviesResponseWrapperDTO responseWrapper = new MoviesResponseWrapperDTO(
                 List.of(new MoviesAPIDTO(1L, title, title, "en", "Um filme de ficção",
                         "poster.jpg", "backdrop.jpg", "2009-12-18", 7.8, 8.5,
-                        1500, false, false, List.of(28, 12))));
+                        1500, false, false, List.of(28, 12)))
+        );
 
-        when(webClient.get()).thenReturn(requestHeadersUriSpec);
-        when(requestHeadersUriSpec.uri(any(Function.class))).thenReturn(requestHeadersSpec);
-        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
-        when(responseSpec.bodyToMono(MoviesResponseWrapperDTO.class))
-                .thenReturn(Mono.just(responseWrapper));
+        // Mockando o comportamento do client
+        when(moviesClient.searchMovie(eq(title), anyString())).thenReturn(responseWrapper);
+        when(movieMapper.toEntity(any(MoviesAPIDTO.class))).thenReturn(new Movie());
+        when(movieRepository.save(any(Movie.class))).thenReturn(new Movie());
 
-        when(movieMapper.toEntity(any())).thenReturn(new Movie());
-        when(movieRepository.save(any())).thenReturn(new Movie());
-
+        // Executando o serviço
         MoviesAPIDTO result = movieService.getAndSaveMovie(title);
 
+        // Verificando o resultado
         assertNotNull(result);
         assertEquals("Avatar", result.title());
+        verify(moviesClient).searchMovie(eq(title), anyString());
+        verify(movieRepository).save(any(Movie.class));
     }
+
     @Test
     void testGetAndSaveMovie_movieNotFound() {
         String title = "Inexistente";
 
-        when(webClient.get()).thenReturn(requestHeadersUriSpec);
-        when(requestHeadersUriSpec.uri(any(Function.class))).thenReturn(requestHeadersSpec);
-        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
-        when(responseSpec.bodyToMono(MoviesResponseWrapperDTO.class)).thenReturn(Mono.empty());
+        // Mockando o retorno de um título não encontrado
+        when(moviesClient.searchMovie(eq(title), anyString())).thenReturn(new MoviesResponseWrapperDTO(List.of()));
 
+        // Verificando se a exceção é lançada corretamente
         ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () -> movieService.getAndSaveMovie(title));
         assertEquals("Filme com título \"Inexistente\" não encontrado", exception.getMessage());
     }
 
-
-    private MoviesAPIDTO criarMoviesAPIDTOFake() {
-        return new MoviesAPIDTO(
-                1L,
-                "Avatar",
-                "Avatar",
-                "en",
-                "Um filme de ficção",
-                "poster.jpg",
-                "backdrop.jpg",
-                "2009-12-18",
-                7.8,
-                8.5,
-                1500,
-                false,
-                false,
-                List.of(28, 12)
-        );
-    }
-
     @Test
-    void testGetAndSaveMovie_empyTitle() {
+    void testGetAndSaveMovie_emptyTitle() {
+        // Testando título vazio
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> movieService.getAndSaveMovie("  "));
         assertEquals("O título do filme não pode ser vazio", exception.getMessage());
     }
 
     @Test
     void testGetAndSaveMovie_nullTitle() {
+        // Testando título nulo
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> movieService.getAndSaveMovie(null));
         assertEquals("O título do filme não pode ser vazio", exception.getMessage());
     }
@@ -149,7 +117,6 @@ class MovieServiceTest {
     @Test
     void testGetMovieById_movieNotFound() {
         when(movieRepository.findById(1L)).thenReturn(java.util.Optional.empty());
-
         assertThrows(ResourceNotFoundException.class, () -> movieService.getMovieById(1L));
         verify(movieRepository).findById(1L);
     }
@@ -158,9 +125,7 @@ class MovieServiceTest {
     void testDeleteMovie_success() {
         when(movieRepository.existsById(1L)).thenReturn(true);
         doNothing().when(movieRepository).deleteById(1L);
-
         movieService.deleteMovie(1L);
-
         verify(movieRepository).existsById(1L);
         verify(movieRepository).deleteById(1L);
     }
@@ -168,12 +133,8 @@ class MovieServiceTest {
     @Test
     void testDeleteMovie_notFound() {
         when(movieRepository.existsById(1L)).thenReturn(false);
-
         assertThrows(ResourceNotFoundException.class, () -> movieService.deleteMovie(1L));
         verify(movieRepository).existsById(1L);
         verify(movieRepository, never()).deleteById(any());
     }
-
-
 }
-
